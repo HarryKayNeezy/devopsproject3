@@ -105,8 +105,7 @@ jobs:
           name: Scan backend
           command: |
             cd ./backend
-            npm install @nestjs/core
-            npm install @nestjs/common
+            npm install
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
 
