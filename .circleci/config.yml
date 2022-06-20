@@ -105,6 +105,7 @@ jobs:
           name: Scan backend
           command: |
             cd ./backend
+            npm i @nestjs
             npm audit fix --audit-level=critical --force
             npm audit --audit-level=critical
 
