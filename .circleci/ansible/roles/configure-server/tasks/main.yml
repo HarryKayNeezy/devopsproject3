@@ -21,7 +21,7 @@
 - name: Install dependencies
   become: yes
   apt:
-    name: ["nodejs", "npm", "python3", "tar", "gzip", "git"]
+    name: ["nodejs", "npm"]
     state: latest
     update_cache: yes
 
@@ -33,7 +33,7 @@
     production: yes
     state: present
 
-- name: Create dist directory.
-  file:
-    path: "~/home/ubuntu/backend"
-    state: directory
+# - name: Create dist directory.
+#   file:
+#     path: "~/home/ubuntu/backend"
+#     state: directory

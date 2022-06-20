@@ -214,14 +214,11 @@ jobs:
             apk add --update ansible
             apk add --update tar
             apk add --update gzip
-            apk add --update tar gzip ansible nodejs npm curl && \
-            pip install awscli
+ 
       - run:
           name: Configure server
           command: |
-            cd .circleci/ansible && \
-            cat inventory.txt && \
-            ansible-playbook -i inventory.txt configure-server.yml
+            ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i ./.circleci/ansible/inventory.txt ./.circleci/ansible/configure-server.yml
       - revert-migrations
       - destroy-environment  
 
@@ -479,5 +476,3 @@ workflows:
           requires: [run-migrations]
       - deploy-backend:
           requires: [run-migrations]
-
-# adding a comment just because
