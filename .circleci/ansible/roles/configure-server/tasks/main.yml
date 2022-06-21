@@ -21,7 +21,7 @@
 - name: Install dependencies
   become: yes
   apt:
-    name: ["nodejs", "npm", "python3", "tar", "gzip", "git"ß]
+    name: ["nodejs", "npm", "python3", "tar", "gzip", "git"]
     state: latest
     update_cache: yes
 
