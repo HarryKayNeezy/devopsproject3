@@ -214,6 +214,10 @@ jobs:
             apk add --update ansible
             apk add --update tar
             apk add --update gzip
+            apk add curl
+            apk add --upgrade bash
+            pip3 install awscli
+            apk add openssh-client
  
       - run:
           name: Configure server
