@@ -154,49 +154,51 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install tar utility
           command: |
-            yum -y install tar
-            yum -y install gzip
+            yum install -y tar gzip
       - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
-              --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --template-file ./.circleci/files/backend.yml \
-              --parameter-overrides ID="udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople-backend 
+            --template-file .circleci/files/backend.yml \
+            --stack-name udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7} \
+            --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
+            --tags project=udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Ensure front-end infrastructure exist
           command: |
             aws cloudformation deploy \
-              --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --template-file ./.circleci/files/frontend.yml \
-              --parameter-overrides ID="udapeople-${CIRCLE_WORKFLOW_ID:0:7}" \
-              --tags project=udapeople-frontend 
+            --template-file .circleci/files/frontend.yml \
+            --stack-name udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7} \
+            --parameter-overrides ID=${CIRCLE_WORKFLOW_ID:0:7} \
+            --tags project=udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}
       - run:
           name: Add back-end ip to ansible inventory
           command: |
-            echo -e "[web]\n" > ./.circleci/ansible/inventory.txt
             aws ec2 describe-instances \
             --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:project,Values=udapeople-backend" \
-            --output text >> ./.circleci/ansible/inventory.txt
-            cat ./.circleci/ansible/inventory.txt
+            --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+            --output text >> ~/project/.circleci/ansible/inventory.txt
+            cat ~/project/.circleci/ansible/inventory.txt
       - run:
-          name: Add back-end ip only to IP file for later use
-          command: |
-            aws ec2 describe-instances \
-            --query 'Reservations[*].Instances[*].PublicIpAddress' \
-            --filters "Name=tag:project,Values=udapeople-backend" \
-            --output text > ./.circleci/ansible/IP.txt
-            cat ./.circleci/ansible/IP.txt
+           name: save the new back-end url to memory using memstach
+           command: |
+             backend_url=$(aws ec2 describe-instances \
+             --query 'Reservations[*].Instances[*].PublicIpAddress' \
+             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+             --output text)
+             curl https://kvdb.io/42mV4KeiPmRdBdCu4LhNtH/backend_url -d 'http://${backend_url}:3030' 
+            #  curl -H "Content-Type: text/plain" \
+            #  -H "token: ecdfc255-81e1-4056-9efa-2d7fa10812e1" \
+            #  --request PUT \
+            #  --data "http://${backend_url}:3030" \
+            #  https://api.memstash.io/values/backend_url
       - persist_to_workspace:
-          root: .circleci/ansible/
+          root: ~/
           paths:
-            - inventory.txt
-            - IP.txt
-      - revert-migrations
+            - project/.circleci/ansible/inventory.txt
+      # Here's where you will add some code to rollback on failure
       - destroy-environment
 
   configure-infrastructure:
